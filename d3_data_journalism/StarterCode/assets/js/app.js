@@ -44,10 +44,6 @@ function xScale(Data, chosenXAxis) {
 function renderXAxis(newXScale, xAxis) {
     var bottomAxis = d3.axisBottom(newXScale);
 
-    xAxis.transition()
-        .duration(1000)
-        .call(bottomAxis);
-    
     return xAxis;
     
 }
@@ -69,31 +65,27 @@ function yScale(Data, chosenYAxis) {
   function renderYAxis(newYScale, yAxis) {
     var leftAxis = d3.axisLeft(newYScale);
 
-    yAxis.transition()
-    .duration(1000)
-    .call(leftAxis);
-
     return yAxis;
 }
 
 
 // function used for updating circles group with a transition to new circles
-function renderCircles(circlesGroup, newXScale, chosenXAxis, newYScale, chosenYAxis) {
+function renderCircles(circlesGroup, newXScale, chosenXAxis) {
 
     circlesGroup.transition()
         .duration(1000)
         .attr("cx", data => newXScale(data[chosenXAxis]))
-        .attr("cy", data => newYScale(data[chosenYAxis]));
+       // .attr("cy", data => newYScale(data[chosenYAxis]))
     
     return circlesGroup
 }
 
-function renderText(circleLabels,newXScale, chosenXAxis, newYScale, chosenYAxis) {
+function renderText(circleLabels, newXScale, chosenXAxis, newYScale, chosenYAxis) {
 
     circleLabels.transition()
         .duration(1000)
         .attr("cx", data => newXScale(data[chosenXAxis]))
-        .attr("cy", data => newYScale(data[chosenYAxis]));
+        .attr("cy", data => newYScale(data[chosenYAxis]))
     
     return circleLabels
 }
@@ -129,18 +121,18 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     });
     
     chartGroup.call(toolTip);
+    
 
-    circlesGroup.on("click", function(data) {
+    circlesGroup.on("mouseover", function(data) {
         toolTip.show(data, this);
-    })
+      })
 
-    .on("mouseout", function(data, index) {
+    .on("mouseout", function(data) {
         toolTip.hide(data);
     });
 
     return circlesGroup;
 }
-
 
 // Retrieve data from the CSV file and execute everything below
 d3.csv("./assets/data/data.csv").then(function(Data, err) {
@@ -152,6 +144,7 @@ d3.csv("./assets/data/data.csv").then(function(Data, err) {
     data.obesity = +data.obesity;
     data.income = +data.income;
   });
+
 
   // xLinearScale function above csv import
   var xLinearScale = xScale(Data, chosenXAxis);
@@ -183,7 +176,7 @@ d3.csv("./assets/data/data.csv").then(function(Data, err) {
     .attr("cx", d => xLinearScale(d[chosenXAxis]))
     .attr("cy", d => yLinearScale(d.obesity))
     .attr("r", 20)
-    .attr("fill", "pink")
+    .attr("fill", "red")
     .attr("opacity", ".5");
 
   // Create group for two x-axis labels
@@ -201,7 +194,7 @@ d3.csv("./assets/data/data.csv").then(function(Data, err) {
     .attr("x", 0)
     .attr("y", 40)
     .attr("value", "income") // value to grab for event listener
-    .classed("inactive", true)
+    .classed("active", true)
     .text("Annual Income");
 
   // append y axis
@@ -235,6 +228,8 @@ d3.csv("./assets/data/data.csv").then(function(Data, err) {
         // updates x axis with transition
         xAxis = renderXAxis(xLinearScale, xAxis);
 
+        yAxis = renderXAxis(yLinearScale, yAxis);
+
         // updates circles with new x values
         circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
 
@@ -250,7 +245,7 @@ d3.csv("./assets/data/data.csv").then(function(Data, err) {
             .classed("active", false)
             .classed("inactive", true);
         }
-        else {
+        else (chosenXAxis === "income") 
           povertyLabel
             .classed("active", false)
             .classed("inactive", true);
@@ -258,8 +253,8 @@ d3.csv("./assets/data/data.csv").then(function(Data, err) {
             .classed("active", true)
             .classed("inactive", false);
         }
-      }
-})
+      })
+
 
 
 labelsGroup.selectAll("text")
@@ -287,7 +282,7 @@ labelsGroup.selectAll("text")
         }
 
         else {
-            povertycareLabel
+            povertyLabel
                 .classed("active", false)
                 .classed("inactive", true)
             incomeLabel
@@ -295,8 +290,5 @@ labelsGroup.selectAll("text")
                 .classed("inactive", false);
         }
     }
-});
-
-}).catch(function(error) {
-  console.log(error);
-});
+console.error();
+})})
